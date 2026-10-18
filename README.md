@@ -10,6 +10,12 @@ AIによる自律型ペネトレーションテストシステム（Goバック�
 
 ---
 
+## 日本語表示
+
+画面の固定文言、日付表示、通知、エクスポートレポートは日本語に対応しています。HTMLの言語は`ja`、日付のロケールは`ja-JP`です。新しく実行するAIの説明・要約・レポートも、別の言語を指定しない限り日本語で生成されます。
+
+APIキー、内部の状態値、ツール名、データベース構造は変更していません。既存の会話、証拠の原文、入力データ、編集可能なプロンプト本文、外部ツールが返す文章は自動翻訳されません。
+
 ## スクリーンショット
 
 > 実際の操作は[オンラインデモ](https://artex-demo.vercel.app/)で確認できます。
@@ -227,7 +233,7 @@ CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 }
 ```
 
-**LLM**：`export ANTHROPIC_API_KEY=sk-...`（または`OPENAI_API_KEY`）を設定するか、UIの「LLM設定」ページに入力します。
+**LLM**：`export ANTHROPIC_API_KEY=sk-...`（または`OPENAI_API_KEY`）を設定するか、UIの「LLM 設定」ページに入力します。
 任意の設定：`ARTEX_LLM_PROVIDER` / `ARTEX_LLM_MODEL` / `ARTEX_LLM_BASE_URL` / `ARTEX_LLM_PROXY`。
 
 **並列実行**：各タスクのworkerエージェント数を「システム設定」で指定します（標準は3）。
