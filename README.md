@@ -72,7 +72,7 @@ APIキー、内部の状態値、ツール名、データベース構造は変�
 ### 方法1：一括インストールスクリプト（推奨）
 
 ```bash
-git clone https://github.com/Hinln/ARTEX.git
+git clone https://github.com/mazikaru492/ARTEX-J-main.git ARTEX
 cd ARTEX
 ./install.sh
 ```
@@ -87,7 +87,7 @@ cd ARTEX
 ### 方法2：Docker Compose（手動）
 
 ```bash
-git clone https://github.com/Hinln/ARTEX.git
+git clone https://github.com/mazikaru492/ARTEX-J-main.git ARTEX
 cd ARTEX
 cp .env.example .env          # POSTGRES_PASSWORDを設定。ANTHROPIC_API_KEYは任意
 docker compose up -d          # autumn27/artexイメージとpostgresを取得
@@ -103,7 +103,7 @@ docker compose up -d          # autumn27/artexイメージとpostgresを取得
 
 ### 方法3：ビルド済みバイナリのダウンロード（Releases）
 
-[Releases](https://github.com/Hinln/ARTEX/releases)から利用するプラットフォームのzipをダウンロードして展開すると、`artex`、`start.sh`（Windowsでは`start.bat`）、`skills/`、`config.example.json`が得られます。
+[Releases](https://github.com/mazikaru492/ARTEX-J-main/releases)から利用するプラットフォームのzipをダウンロードして展開すると、`artex`、`start.sh`（Windowsでは`start.bat`）、`skills/`、`config.example.json`が得られます。
 
 ```bash
 cp config.example.json config.json   # databaseの接続情報を設定
@@ -147,9 +147,9 @@ ARTEX_TARGETS=linux/amd64,windows/amd64 ./build.sh --release
 
 > 更新ではプログラムのみを入れ替え、データは変更しません。Postgresのデータボリューム`pgdata`、`./data`（jwt.key / SQLiteなど）、`./skills`は保持されます。**データベースの移行を手動で実行する必要はありません。** `artex`は起動のたびに`schema.sql`を冪等に実行します（`ADD COLUMN` / `CREATE INDEX IF NOT EXISTS`を含む）。つまり、再起動時に移行が行われます。更新前には`./data`とデータベースのバックアップを推奨します。
 
-### このリポジトリの非公開Release更新元
+### このリポジトリのRelease更新元
 
-画面からのワンクリック更新は、[Hinln/ARTEX Releases](https://github.com/Hinln/ARTEX/releases)を固定の更新元としてバージョンを確認し、ダウンロードします。ソースコードのクローンやGitによる更新も`Hinln/ARTEX`を使用します。元のプロジェクトのGo moduleパスは変更していません。
+ソースコードのクローンや手動でのReleaseダウンロードは、[mazikaru492/ARTEX-J-main](https://github.com/mazikaru492/ARTEX-J-main)を使用してください。画面からのワンクリック更新は、現在の実装では元プロジェクトのReleaseを更新元として使用します。
 
 原文では、このリポジトリを非公開リポジトリとして説明しています。ARTEXのバックエンドプロセスに`ARTEX_UPDATE_GITHUB_TOKEN`を設定してください。トークンには、このリポジトリの**Contents: read**権限のみが必要です。バックエンドがReleaseの照会と添付ファイルの取得に使用し、ブラウザには送信しません。Gitにコミットしないでください。
 
@@ -200,7 +200,7 @@ docker image prune -f          # 古いイメージを削除（任意）
 
 ### 方法4：ビルド済みバイナリ（Releases）
 
-[Releases](https://github.com/Hinln/ARTEX/releases)から新版のzipを取得し、旧プロセスを停止してから`artex`と`skills/`を上書きします（自分の`config.json`と`data/`は保持）。その後、再起動してください。
+[Releases](https://github.com/mazikaru492/ARTEX-J-main/releases)から新版のzipを取得し、旧プロセスを停止してから`artex`と`skills/`を上書きします（自分の`config.json`と`data/`は保持）。その後、再起動してください。
 
 ```bash
 cp -r <展開先ディレクトリ>/skills ./ && cp <展開先ディレクトリ>/artex ./
