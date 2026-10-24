@@ -15,7 +15,11 @@ services:
     restart: unless-stopped
 
   artex:
-    image: autumn27/artex:${ARTEX_TAG:-latest}
+    # Build this patched checkout rather than pulling an unrelated upstream image.
+    build:
+      context: .
+      args:
+        ARTEX_BINARY_SOURCE: source
     depends_on:
       postgres:
         condition: service_healthy
@@ -42,3 +46,4 @@ services:
 
 volumes:
   pgdata:
+

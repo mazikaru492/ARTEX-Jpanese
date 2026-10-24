@@ -45,9 +45,9 @@ install_docker(){
   else
     info "沿用已存在的 .env"
   fi
-  info "拉取镜像并启动…"
-  docker compose pull || true
-  docker compose up -d
+  info "从当前源码构建安全更新后的镜像并启动…"
+  docker compose build --pull artex
+  docker compose up -d --no-build
   ok "启动完成 → http://localhost:8787"
   info "查看日志：docker compose logs -f artex"
 }
@@ -120,3 +120,4 @@ case "$(ask '选择' 1)" in
   2) install_local ;;
   *) die "无效选择" ;;
 esac
+

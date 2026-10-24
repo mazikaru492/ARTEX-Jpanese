@@ -1,0 +1,45 @@
+name: Security runtime checks
+
+on:
+  push:
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'scripts/**'
+      - '.github/workflows/security-runtime.yml'
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'scripts/**'
+      - '.github/workflows/security-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docker-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - run: node --test scripts/check-node-security.test.cjs
+      - run: POSTGRES_PASSWORD=ci-only docker compose config --quiet
+      - name: Build patched source image
+        run: docker build --pull --build-arg ARTEX_BINARY_SOURCE=source -t artex-security:test .
+      - name: Check runtime and entrypoint
+        run: |
+          docker run --rm --entrypoint node artex-security:test /app/scripts/check-node-security.cjs
+          docker run --rm artex-security:test -h
+      - name: Check release prebuilt path
+        run: |
+          mkdir -p dist/amd64
+          container_id=$(docker create artex-security:test)
+          docker cp "$container_id:/app/artex" dist/amd64/artex
+          docker rm "$container_id"
+          docker build --build-arg ARTEX_BINARY_SOURCE=prebuilt -t artex-prebuilt-security:test .
+          docker run --rm artex-prebuilt-security:test -h

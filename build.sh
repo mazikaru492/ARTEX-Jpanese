@@ -115,6 +115,7 @@ if [ "${ARTEX_SKIP_FRONTEND:-0}" = "1" ]; then
   [ -d server/webui/dist ] || die "ARTEX_SKIP_FRONTEND=1 但 server/webui/dist 不存在"
 else
   command -v npm >/dev/null 2>&1 || die "未检测到 npm（前端静态构建需要 Node.js/npm）"
+  node scripts/check-node-security.cjs
   command -v rsync >/dev/null 2>&1 || die "未检测到 rsync"
   info "构建前端静态资源"
   if [ "${ARTEX_SKIP_NPM_CI:-0}" != "1" ]; then
@@ -261,3 +262,4 @@ if [ "$ARTEX_PACKAGE" = "1" ]; then
   write_checksums
   info "Release 包已生成于：$ARTEX_PACKAGE_DIR"
 fi
+
