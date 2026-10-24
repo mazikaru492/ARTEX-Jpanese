@@ -90,11 +90,28 @@ cd ARTEX
 git clone https://github.com/mazikaru492/ARTEX-J-main.git ARTEX
 cd ARTEX
 cp .env.example .env          # POSTGRES_PASSWORDを設定。ANTHROPIC_API_KEYは任意
-docker compose up -d          # autumn27/artexイメージとpostgresを取得
+docker compose up -d --build  # このチェックアウトから修正済みイメージをビルド
 # → http://localhost:8787
 ```
 
 イメージには一般的なツール（ripgrep/curl/vim/npm/nmapなど）が含まれます。`./skills`と`./data`はバインドマウントで永続化されます。
+
+**CVE-2026-111497への対応：** Node.js 22系列へ更新し、ビルド時とコンテナ起動時に修正版の下限を検査します。
+Composeはこのリポジトリのソースからフロントエンド・Goバイナリ・実行イメージをビルドします。
+ホストへのGo／Node.jsのインストールや、事前の`dist/`作成は不要です（BuildKit対応のDocker Composeが必要）。
+`.env`の`ARTEX_TAG`による外部イメージの選択は、このCompose構成では使用しません。
+
+既存環境はアプリを使っていない時間帯に次を実行してください。DBのボリュームと`data/`は保持されます。
+
+```bash
+git pull --ff-only
+docker compose build --pull artex
+docker compose up -d --no-build artex
+docker compose exec artex node /app/scripts/check-node-security.cjs
+```
+
+画面内の「一括更新」はGoバイナリだけの更新で、Node.jsの修正には上記のイメージ再ビルドが必要です。
+自己管理するホストのNode.jsにも、22.23.4／24.22.1／26.12.1以降の各系列を使用してください。
 
 リモートMCPはシステム設定で`http`（Streamable HTTP）または`sse`（従来のSSE）を選択できます。
 従来のSSEサービスでは通常、`GET /sse`でイベントストリームを確立し、サービスが返す
@@ -172,7 +189,7 @@ ARTEX_TARGETS=linux/amd64,windows/amd64 ./build.sh --release
 - **いつでも戻せます**：前のバージョンは`artex.old`として残り、カードに「前のバージョンへロールバック」が表示されます。ただし、データベース構造は戻りません。
 - **更新により実行中のタスクは中断されます**。更新時には再起動するため、タスクが動いていないときに実施してください。
 - **開発ビルドは更新対象外です**：バージョンが`dev`、または`git describe`の接尾辞付きの場合は無効になります。ローカルでデバッグ中のバイナリが正式版で上書きされることを防ぎます。
-- **Docker環境ではプログラムだけを更新し、イメージは更新しません**：イメージ内のplaywright / nmapなどは更新されず、`docker compose up -d`でコンテナを再作成するとイメージに含まれるバージョンに戻ります。イメージも更新する場合は`docker compose pull artex && docker compose up -d artex`を実行してください。
+- **Docker環境ではプログラムだけを更新し、イメージは更新しません**：イメージ内のNode.js / playwright / nmapなどは更新されず、コンテナを再作成するとイメージ内の版に戻ります。イメージも更新する場合は、最新ソースで`docker compose build --pull artex`を実行してから`docker compose up -d --no-build artex`で反映してください。
 - GitHubへの接続にプロキシが必要な場合、同じ画面で**グローバルプロキシ**を設定すると、更新にも使用されます。ダウンロード元はGitHubドメインに限定し、HTTPSを強制します。
 
 ### 方法2：一括更新スクリプト
@@ -184,17 +201,17 @@ cd ARTEX
 
 必要に応じて`git pull`で最新コードを取得した後、**①Dockerで更新**または**②ローカルでビルドして更新**を選択します（`install.sh`に対応）。
 
-- **①Docker**：イメージのtagを指定（Enterで`.env`の`ARTEX_TAG`を使用。未設定なら`latest`）→ `docker compose pull` → `docker compose up -d`。新しいイメージで再起動すると自動で移行します。
+- **①Docker**：現在のソースから`docker compose build --pull artex` → `docker compose up -d --no-build artex`。新しいイメージで再起動すると自動で移行します。
 - **②ローカル**：フロントエンドの静的ファイルを再ビルド → `./artex`を再ビルド。完了後、プロセスを再起動して反映します。
 
 ### 方法3：Docker Compose（手動）
 
 ```bash
 cd ARTEX
-git pull                       # composeやスクリプトを更新（任意）
-# バージョン指定：.envでARTEX_TAG=v0.2.0を設定。未設定ならlatest
-docker compose pull artex
-docker compose up -d artex     # 新しいイメージで再起動 → schemaを自動移行
+git pull --ff-only             # 修正済みソースとDockerfileを取得
+docker compose build --pull artex
+docker compose up -d --no-build artex  # 新しいイメージで再起動
+docker compose exec artex node /app/scripts/check-node-security.cjs
 docker image prune -f          # 古いイメージを削除（任意）
 ```
 
@@ -513,3 +530,4 @@ https://github.com/oritera/Cairn
 ### 免責事項
 
 本プロジェクトは「現状のまま（AS IS）」提供され、明示または黙示の保証はありません。作者と貢献者は、利用方法の適否を問わず、本ツールの利用によって生じる直接・間接の損失、データ喪失、システム損傷、法的紛争について責任を負いません。**本プロジェクトのダウンロード、インストール、利用は、上記のすべての条件を読み、理解し、同意したことを意味します。**
+
